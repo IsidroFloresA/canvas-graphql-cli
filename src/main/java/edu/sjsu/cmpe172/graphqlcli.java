@@ -52,8 +52,8 @@ public class graphqlcli implements Runnable {
 
 @Command(name = "list-courses", description = "List of the Courses in Canvas")
 class ListCoursers implements Runnable {
-    @Option(names = {"--active", "--no-active"}, description = "Check if the course is active or not")
-    private boolean active = true;
+    @Option(names = {"--active"}, negatable = true, description = "Check if the course is active or not")
+    private Boolean active;
 
     @ParentCommand
     private graphqlcli parent;
@@ -79,13 +79,29 @@ class ListCoursers implements Runnable {
 
             if (courses == null || courses.isEmpty()) {
                 System.out.println("No courses found.");
-            } else {
-                for (Map map : courses) {
-                    System.out.println(map.get("id") + " - " + map.get("name")
-                            + " (updatedAt: " + map.get("updatedAt") + ")");
-                }
-
             }
+            LocalDateTime cutoff = LocalDateTime.parse("2025-08-01T00:00:00");
+
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+            for (Object obj : courses) {
+                Map course = (Map) obj;
+                String updatedAtStr = (String) course.get("updatedAt");
+
+                LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr, formatter);
+
+                if (active == null) {
+                    System.out.println(course.get("id") + " - " + course.get("name")
+                            + " (updatedAt: " + course.get("updatedAt") + ")");
+                } else if (active && updatedAt.isAfter(cutoff)) {
+                    System.out.println(course.get("id") + " - " + course.get("name")
+                            + " (updatedAt: " + course.get("updatedAt") + ")");
+                } else {
+                    System.out.println(course.get("id") + " - " + course.get("name")
+                            + " (updatedAt: " + course.get("updatedAt") + ")");
+                }
+            }
+
         } catch (
                 Exception e) {
             System.out.println("Error: " + e.getMessage());
