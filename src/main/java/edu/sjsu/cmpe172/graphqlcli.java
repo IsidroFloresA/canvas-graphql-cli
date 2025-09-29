@@ -26,10 +26,10 @@ public class graphqlcli implements Runnable {
     public void run() {
         System.out.print("Missing required option: '--token=<token>' \n" +
                 "Usage: <main class> --token=<token> [COMMAND] \n" +
-                "      --token=<token>   API authorization token from canvas");
-        System.out.print("Commands:\n" +
-                " list-assignments\n" +
-                " list-users\n");
+                "      --token=<token>   API authorization token from \n");
+        System.out.print("Commands: \n" +
+                " list-assignments \n" +
+                " list-courses");
     }
 
     public static void main(String[] args) {
@@ -66,7 +66,6 @@ class ListCoursers implements Runnable {
             String query = """
                     query MyQuery {
                       allCourses {
-                        id
                         name
                         updatedAt
                       }
@@ -91,14 +90,12 @@ class ListCoursers implements Runnable {
                 LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr, formatter);
 
                 if (active == null) {
-                    System.out.println(course.get("id") + " - " + course.get("name")
-                            + " (updatedAt: " + course.get("updatedAt") + ")");
+                    System.out.println(course.get("name"));
                 } else if (active && updatedAt.isAfter(cutoff)) {
-                    System.out.println(course.get("id") + " - " + course.get("name")
-                            + " (updatedAt: " + course.get("updatedAt") + ")");
-                } else {
-                    System.out.println(course.get("id") + " - " + course.get("name")
-                            + " (updatedAt: " + course.get("updatedAt") + ")");
+                    System.out.println(course.get("name")
+                    );
+                } else if(!active && updatedAt.isBefore(cutoff)) {
+                    System.out.println(course.get("name"));
                 }
             }
 
@@ -112,7 +109,7 @@ class ListCoursers implements Runnable {
 @Command(name = "list-assignments", description = "List of the assignments in Canvas")
 class ListAssignments implements Runnable {
 
-    @Option(names = {"--active", "--no-active"}, description = "Check if it is active or not")
+    @Option(names = {"--active"}, negatable = true, description = "Check if it is active or not")
     private boolean active;
 
     @ParentCommand
@@ -123,6 +120,9 @@ class ListAssignments implements Runnable {
         try {
             String token = parent.getToken();
             HttpGraphQlClient client = CanvasHttp.create(token);
+            String query = """
+                    query MyQuery {
+            """;
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
