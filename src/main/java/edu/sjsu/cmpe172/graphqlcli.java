@@ -8,6 +8,8 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 
@@ -22,9 +24,12 @@ public class graphqlcli implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Commands:");
-        System.out.println(" list-assignments");
-        System.out.println(" list-users");
+        System.out.print("Missing required option: '--token=<token>' \n" +
+                "Usage: <main class> --token=<token> [COMMAND] \n" +
+                "      --token=<token>   API authorization token from canvas");
+        System.out.print("Commands:\n" +
+                " list-assignments\n" +
+                " list-users\n");
     }
 
     public static void main(String[] args) {
@@ -47,8 +52,8 @@ public class graphqlcli implements Runnable {
 
 @Command(name = "list-courses", description = "List of the Courses in Canvas")
 class ListCoursers implements Runnable {
-    @Option(names = "--active/--no-active", description = "Check if the course is active or not")
-    private boolean active;
+    @Option(names = {"--active", "--no-active"}, description = "Check if the course is active or not")
+    private boolean active = true;
 
     @ParentCommand
     private graphqlcli parent;
@@ -60,24 +65,29 @@ class ListCoursers implements Runnable {
             HttpGraphQlClient client = CanvasHttp.create(token);
             String query = """
                     query MyQuery {
-                      course(id: "Q291cnNlLTE0NjkwODY")  {
+                      allCourses {
                         id
                         name
+                        updatedAt
                       }
                     }
                     """;
-            var course = client.document(query)
-                    .retrieve("course")
-                    .toEntity(Map.class)
+            var courses = client.document(query)
+                    .retrieve("allCourses")
+                    .toEntityList(Map.class)
                     .block();
 
-            if (course != null) {
-                System.out.println("Course: " + course.get("id") + " - " + course.get("name"));
+            if (courses == null || courses.isEmpty()) {
+                System.out.println("No courses found.");
             } else {
-                System.out.println("No course found.");
-            }
+                for (Map map : courses) {
+                    System.out.println(map.get("id") + " - " + map.get("name")
+                            + " (updatedAt: " + map.get("updatedAt") + ")");
+                }
 
-        } catch (Exception e) {
+            }
+        } catch (
+                Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
@@ -86,7 +96,7 @@ class ListCoursers implements Runnable {
 @Command(name = "list-assignments", description = "List of the assignments in Canvas")
 class ListAssignments implements Runnable {
 
-    @Option(names = "--active/--no-active", description = "Check if it is active or not")
+    @Option(names = {"--active", "--no-active"}, description = "Check if it is active or not")
     private boolean active;
 
     @ParentCommand
