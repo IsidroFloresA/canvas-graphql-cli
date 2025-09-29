@@ -7,9 +7,12 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
+import javax.xml.namespace.QName;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -26,7 +29,7 @@ public class graphqlcli implements Runnable {
     public void run() {
         System.out.print("Missing required option: '--token=<token>' \n" +
                 "Usage: <main class> --token=<token> [COMMAND] \n" +
-                "      --token=<token>   API authorization token from \n");
+                "      --token=<token>   API authorization token from canvas\n");
         System.out.print("Commands: \n" +
                 " list-assignments \n" +
                 " list-courses");
@@ -52,8 +55,8 @@ public class graphqlcli implements Runnable {
 
 @Command(name = "list-courses", description = "List of the Courses in Canvas")
 class ListCoursers implements Runnable {
-    @Option(names = {"--active"}, negatable = true, description = "Check if the course is active or not")
-    private Boolean active;
+    @Option(names = {"--active", "--no-active"}, description = "Check if the course is active or not")
+    private boolean active = true;
 
     @ParentCommand
     private graphqlcli parent;
@@ -88,13 +91,12 @@ class ListCoursers implements Runnable {
                 String updatedAtStr = (String) course.get("updatedAt");
 
                 LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr, formatter);
-
-                if (active == null) {
-                    System.out.println(course.get("name"));
-                } else if (active && updatedAt.isAfter(cutoff)) {
+//                if (active == null) {
+//                    System.out.println(course.get("name"));
+                if (active && updatedAt.isAfter(cutoff)) {
                     System.out.println(course.get("name")
                     );
-                } else if(!active && updatedAt.isBefore(cutoff)) {
+                } else if (!active && updatedAt.isBefore(cutoff)) {
                     System.out.println(course.get("name"));
                 }
             }
@@ -108,6 +110,8 @@ class ListCoursers implements Runnable {
 
 @Command(name = "list-assignments", description = "List of the assignments in Canvas")
 class ListAssignments implements Runnable {
+    @Parameters
+    private String course;
 
     @Option(names = {"--active"}, negatable = true, description = "Check if it is active or not")
     private boolean active;
@@ -118,11 +122,6 @@ class ListAssignments implements Runnable {
     @Override
     public void run() {
         try {
-            String token = parent.getToken();
-            HttpGraphQlClient client = CanvasHttp.create(token);
-            String query = """
-                    query MyQuery {
-            """;
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
