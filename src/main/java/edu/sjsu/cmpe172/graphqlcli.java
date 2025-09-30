@@ -55,7 +55,7 @@ public class graphqlcli implements Runnable {
 
 @Command(name = "list-courses", description = "List of the Courses in Canvas")
 class ListCoursers implements Runnable {
-    @Option(names = "--no-active", negatable = true , description = "Check if the course is active or not", defaultValue = "true")
+    @Option(names = "--no-active", negatable = true, description = "Check if the course is active or not", defaultValue = "true")
     private Boolean active;
 
     @ParentCommand
@@ -125,10 +125,8 @@ class ListAssignments implements Runnable {
             String query = """
                     query MyQuery {
                       allCourses {
+                        _id
                         name
-                        term {
-                          name
-                        }
                       }
                     }
                     """;
@@ -136,6 +134,9 @@ class ListAssignments implements Runnable {
                     .retrieve("allCourses")
                     .toEntityList(Map.class)
                     .block();
+            if (courses == null || courses.isEmpty()) {
+                System.out.println("No courses found.");
+            }
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
