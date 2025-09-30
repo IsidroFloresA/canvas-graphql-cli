@@ -55,8 +55,8 @@ public class graphqlcli implements Runnable {
 
 @Command(name = "list-courses", description = "List of the Courses in Canvas")
 class ListCoursers implements Runnable {
-    @Option(names = {"--active", "--no-active"}, description = "Check if the course is active or not")
-    private boolean active = true;
+    @Option(names = "--no-active", negatable = true , description = "Check if the course is active or not", defaultValue = "true")
+    private Boolean active;
 
     @ParentCommand
     private graphqlcli parent;
@@ -120,6 +120,22 @@ class ListAssignments implements Runnable {
     @Override
     public void run() {
         try {
+            String token = parent.getToken();
+            HttpGraphQlClient client = CanvasHttp.create(token);
+            String query = """
+                    query MyQuery {
+                      allCourses {
+                        name
+                        term {
+                          name
+                        }
+                      }
+                    }
+                    """;
+            var courses = client.document(query)
+                    .retrieve("allCourses")
+                    .toEntityList(Map.class)
+                    .block();
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
