@@ -70,7 +70,9 @@ class ListCoursers implements Runnable {
                     query MyQuery {
                       allCourses {
                         name
-                        updatedAt
+                        term {
+                          name
+                        }
                       }
                     }
                     """;
@@ -82,22 +84,18 @@ class ListCoursers implements Runnable {
             if (courses == null || courses.isEmpty()) {
                 System.out.println("No courses found.");
             }
-            LocalDateTime cutoff = LocalDateTime.parse("2025-08-01T00:00:00");
-
-            DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
             for (Object obj : courses) {
                 Map course = (Map) obj;
-                String updatedAtStr = (String) course.get("updatedAt");
+                String courseName = (String) course.get("name");
 
-                LocalDateTime updatedAt = LocalDateTime.parse(updatedAtStr, formatter);
-//                if (active == null) {
-//                    System.out.println(course.get("name"));
-                if (active && updatedAt.isAfter(cutoff)) {
-                    System.out.println(course.get("name")
-                    );
-                } else if (!active && updatedAt.isBefore(cutoff)) {
-                    System.out.println(course.get("name"));
+                Map termObj = (Map) course.get("term");
+                String termName = (String) termObj.get("name");
+
+                if (active && termName.equals(("Fall 2025"))) {
+                    System.out.println(courseName);
+                } else if (!active && !termName.equals(("Fall 2025"))) {
+                    System.out.println(courseName);
                 }
             }
 
