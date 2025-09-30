@@ -94,7 +94,7 @@ class ListCoursers implements Runnable {
 
                 if (active && termName.equals(("Fall 2025"))) {
                     System.out.println(courseName);
-                } else if (!active && !termName.equals(("Fall 2025"))) {
+                } else if (!active) {
                     System.out.println(courseName);
                 }
             }
