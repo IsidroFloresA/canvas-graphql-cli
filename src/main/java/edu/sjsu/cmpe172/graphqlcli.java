@@ -203,8 +203,13 @@ class ListAssignments implements Runnable {
                 String assignmentName = (String) assignment.get("name");
                 String dueAt = (String) assignment.get("dueAt");
 
+                Map lockInfo = (Map) assignment.get("lockInfo");
+                boolean isLocked = lockInfo != null && Boolean.TRUE.equals(lockInfo.get("isLocked"));
+
                 if (active) {
-                    System.out.println(assignmentName + " due at " + dueAt);
+                    if (!isLocked) {
+                        System.out.println(assignmentName + " due at " + dueAt);
+                    }
                 } else {
                     System.out.println(assignmentName + " due at " + dueAt);
                 }
