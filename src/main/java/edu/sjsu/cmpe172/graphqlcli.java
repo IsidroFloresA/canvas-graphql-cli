@@ -101,7 +101,7 @@ class ListCoursers implements Runnable {
 
         } catch (
                 Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 }
@@ -111,7 +111,7 @@ class ListAssignments implements Runnable {
     @Parameters
     private String course;
 
-    @Option(names = {"--active"}, negatable = true, description = "Check if it is active or not")
+    @Option(names = "--no-active", negatable = true, description = "Check if it is active or not")
     private boolean active;
 
     @ParentCommand
@@ -127,6 +127,9 @@ class ListAssignments implements Runnable {
                       allCourses {
                         _id
                         name
+                        term {
+                          name
+                        }
                       }
                     }
                     """;
@@ -137,8 +140,36 @@ class ListAssignments implements Runnable {
             if (courses == null || courses.isEmpty()) {
                 System.out.println("No courses found.");
             }
+            List<Map> match = new ArrayList<>();
+
+            for (Object obj : courses) {
+                Map courseMap = (Map) obj;
+                String courseName = (String) courseMap.get("name");
+
+                Map termObj = (Map) courseMap.get("term");
+                String termName = (String) termObj.get("name");
+
+                if (courseName.toLowerCase().contains(course.toLowerCase())) {
+                    if (active && "Fall 2025".equals(termName)) {
+                        match.add(courseMap);
+                    } else if (!active) {
+                        match.add(courseMap);
+                    }
+                }
+            }
+            if (match.isEmpty()) {
+                System.out.println("No matching courses found for: " + course);
+                return;
+            }
+            if (match.size() > 1) {
+                System.out.println("Multiple matches found, please be more specific:");
+                for (Map m : match) {
+                    System.out.println(m.get("name"));
+                }
+                return;
+            }
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 }
