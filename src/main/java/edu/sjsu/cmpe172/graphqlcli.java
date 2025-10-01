@@ -111,7 +111,7 @@ class ListAssignments implements Runnable {
     @Parameters
     private String course;
 
-    @Option(names = "--no-active", negatable = true, description = "Check if it is active or not")
+    @Option(names = "--no-active", negatable = true, description = "Check if it is active or not", defaultValue = "true")
     private boolean active;
 
     @ParentCommand
@@ -167,6 +167,47 @@ class ListAssignments implements Runnable {
                     System.out.println(m.get("name"));
                 }
                 return;
+            }
+
+            Map selectedCourse = (Map) match.get(0);
+            String courseId = (String) selectedCourse.get("_id");
+
+            String secondQuery = """
+                    query courseInfo ($courseId: ID!) {
+                      course(id: $courseId) {
+                        assignmentsConnection {
+                          nodes {
+                            name
+                            dueAt
+                            lockInfo {
+                              isLocked
+                            }
+                          }
+                        }
+                      }
+                    }
+                    """;
+
+            Map<String, Object> variables = Map.of("courseId", courseId);
+
+            var courseData = client.document(secondQuery)
+                    .variables(variables)
+                    .retrieve("course")
+                    .toEntity(Map.class)
+                    .block();
+
+            Map assignmentsConn = (Map) courseData.get("assignmentsConnection");
+            List<Map> assignments = (List<Map>) assignmentsConn.get("nodes");
+
+            for (Map assignment : assignments) {
+                String assignmentName = (String) assignment.get("name");
+                String dueAt = (String) assignment.get("dueAt");
+
+                if (active) {
+                    System.out.println(assignmentName + " due at " + dueAt);
+                } else {
+                    System.out.println(assignmentName + " due at " + dueAt);
+                }
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
