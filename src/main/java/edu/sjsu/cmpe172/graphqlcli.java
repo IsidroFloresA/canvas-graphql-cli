@@ -210,6 +210,7 @@ class ListAssignments implements Runnable {
                     if (!isLocked) {
                         System.out.println(assignmentName + " due at " + dueAt);
                     }
+
                 } else {
                     System.out.println(assignmentName + " due at " + dueAt);
                 }
