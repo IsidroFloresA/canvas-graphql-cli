@@ -27,12 +27,12 @@ public class graphqlcli implements Runnable {
 
     @Override
     public void run() {
-        System.out.print("Missing required option: '--token=<token>' \n" +
-                "Usage: <main class> --token=<token> [COMMAND] \n" +
+        System.err.print("Missing required option: '--token=<token>'\n" +
+                "Usage: <main class> --token=<token> [COMMAND]\n" +
                 "      --token=<token>   API authorization token from canvas\n");
-        System.out.print("Commands: \n" +
-                " list-assignments \n" +
-                " list-courses");
+        System.err.print("Commands:\n" +
+                "  list-assignments\n" +
+                "  list-courses");
     }
 
     public static void main(String[] args) {
