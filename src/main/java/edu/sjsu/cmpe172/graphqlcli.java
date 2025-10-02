@@ -32,7 +32,7 @@ public class graphqlcli implements Runnable {
                 "      --token=<token>   API authorization token from canvas\n");
         System.err.print("Commands:\n" +
                 "  list-assignments\n" +
-                "  list-courses");
+                "  list-courses\n");
     }
 
     public static void main(String[] args) {
