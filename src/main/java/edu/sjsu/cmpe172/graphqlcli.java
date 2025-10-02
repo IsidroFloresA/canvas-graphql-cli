@@ -179,9 +179,6 @@ class ListAssignments implements Runnable {
                           nodes {
                             name
                             dueAt
-                            lockInfo {
-                              isLocked
-                            }
                           }
                         }
                       }
@@ -203,14 +200,17 @@ class ListAssignments implements Runnable {
                 String assignmentName = (String) assignment.get("name");
                 String dueAt = (String) assignment.get("dueAt");
 
-                Map lockInfo = (Map) assignment.get("lockInfo");
-                boolean isLocked = lockInfo != null && Boolean.TRUE.equals(lockInfo.get("isLocked"));
+                if (dueAt == null) {
+                    continue;
+                }
+
+                java.time.OffsetDateTime dueDateTime = java.time.OffsetDateTime.parse(dueAt);
+                boolean isPastDue = java.time.OffsetDateTime.now().isAfter(dueDateTime);
 
                 if (active) {
-                    if (!isLocked) {
+                    if (!isPastDue) {
                         System.out.println(assignmentName + " due at " + dueAt);
                     }
-
                 } else {
                     System.out.println(assignmentName + " due at " + dueAt);
                 }
